@@ -1,0 +1,53 @@
+Rabbit MQ notes
+******************
+
+1. Install RabbitMQ
+--------------------------------
+-rw-r--r-- 1 root root  5088890 Mar  1 14:39 rabbitmq-server-3.6.1-1.suse.noarch.rpm
+-rw-r--r-- 1 root root 18345424 Apr  6 01:34 erlang-18.3-1.el7.centos.x86_64.rpm
+drwxr-xr-x 5 root root     4096 Jun 21 20:10 aws
+-rw-r--r-- 1 root root 83299908 Jul 29 21:28 firefox-47.0.1-2.fc22.x86_64.rpm
+
+
+2. Configure the plug-in for RabbitMQ
+-------------------------------------------------
+[root@ip-10-21-16-14 opt]# rabbitmq-plugins enable rabbitmq_mqtt
+Plugin configuration unchanged.
+Applying plugin configuration to rabbit@ip-10-21-16-14... nothing to do.
+
+[root@ip-10-21-16-14 opt]# rabbitmq-plugins enable rabbitmq_management
+The following plugins have been enabled:
+  mochiweb
+  webmachine
+  rabbitmq_web_dispatch
+  rabbitmq_management_agent
+  rabbitmq_management
+Applying plugin configuration to rabbit@ip-10-21-16-14... started 5 plugins.
+
+
+3. Search the RabbitMQ installation path and place a config file there to enable it.
+---------------------------------------------------------------------------------------
+[root@ip-10-21-16-14 opt]# cd /etc/rabbitmq/
+[root@ip-10-21-16-14 rabbitmq]# ls -ltr
+total 4
+-rw-r--r-- 1 root root 37 Aug  3 06:16 enabled_plugins
+[root@ip-10-21-16-14 rabbitmq]# vi rabbitmq.config
+
+
+4. Search for RabbitMQ command,
+--------------------------------
+[root@ip-10-21-16-14 rabbitmq]# rabbitmq
+rabbitmqctl       rabbitmq-plugins  rabbitmq-server
+
+5. Start RabbitMQ
+--------------------------------
+[root@ip-10-21-16-14 rabbitmq]# rabbitmq-server
+
+              RabbitMQ 3.6.1. Copyright (C) 2007-2016 Pivotal Software, Inc.
+  ##  ##      Licensed under the MPL.  See http://www.rabbitmq.com/
+  ##  ##
+  ##########  Logs: /var/log/rabbitmq/rabbit@ip-10-21-16-14.log
+  ######  ##        /var/log/rabbitmq/rabbit@ip-10-21-16-14-sasl.log
+  ##########
+              Starting broker... completed with 7 plugins.
+
