@@ -1,0 +1,9 @@
+Adding certificate into Keystore - Java
+-------------------------------------------
+
+[ec2-user@ip-55-66-77-17 security]$ sudo keytool -keystore cacerts -importcert -alias cnsintvwcom -file /opt/cert/bin/ser.crt
+cns-int_com.pem CA_ROOT.pem setenv.sh shutdown.sh startup.sh
+[ec2-user@ip-55-66-77-17 security]$ sudo keytool -keystore cacerts -importcert -alias entrust -file /opt/cert/bin/abc.pem
+Enter keystore password:
+Certificate was added to keystore
+
