@@ -1,0 +1,47 @@
+AWS VPC Access tests
+=====================
+
+==============================================================
+root@ip-33-44-55-66:/home/ubuntu# aws ec2 describe-vpcs
+==============================================================
+
+1. Create vpc with the specified cider bloack
+==================================================
+Create new VPC with cider block - 172.55.10.0/24
+==================================================
+root@ip-33-44-55-66:/home/ubuntu# aws ec2 create-vpc --cidr-block 172.55.10.0/24
+
+2. Deleting VPC we created using 'aws-test' policy grounp restricted with the access for the VPC
+================================================================================
+root@ip-33-44-55-66:/home/ubuntu# aws ec2 delete-vpc  --vpc-id <VPC_ID>
+================================================================================
+
+3. create a user in 'aws-test' policy
+=================================================================================
+root@ip-33-44-55-66:/home/ubuntu# aws iam create-user --user-name <example_user>
+=================================================================================
+
+4. create a group using 'aws-test' policy - It must be restricted
+=====================================================================================
+root@ip-33-44-55-66:/home/ubuntu# aws iam create-group --group-name <example_test_grp>
+=====================================================================================
+
+5. Add user to the groups using 'aws-test' policy
+==================================================
+
+root@ip-33-44-55-66:/home/ubuntu# aws iam add-user-to-group --user-name <example_user> --group-name <example_test_grp>
+===========================================================================================================================
+
+6. Creating new aws instance using 'aws-test' policy
+===========================================================
+root@ip-33-44-55-66:/home/ubuntu# aws ec2 run-instances --image-id <AMI_ID> --count 1 --instance-type t2.micro --key-name <example_key> --subnet-id <subnet_id>
+==============================================================================================================================================================================
+
+
+
+
+
+
+
+
+
