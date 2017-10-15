@@ -1,0 +1,382 @@
+Docker notes - running instance of any software you specify
+=================================================================
+
+1. Run the docker images - Default it pulls the docker images from docker hub
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -it fedora /bin/bash
+root@ip-33-44-55-66:~# docker run -it node /bin/bash
+
+
+2. pull the docker images from docker hub
+
+root@ip-33-44-55-66:/home/ubuntu# docker pull -a fedora
+root@ip-33-44-55-66:/home/ubuntu# docker pull -a coreos/etcd
+
+images are stored at /var/lib/docker/aufs
+
+3. List all the images downloaded from docker
+
+root@ip-33-44-55-66:/home/ubuntu# docker images fedora
+
+4. Attached the running docker
+
+root@ip-33-44-55-66:/home/ubuntu# docker attach <containerid>
+control + P + Q -> exiting from the running docker without killing the process
+
+5. Verify the imageids for each layer of docker image,
+
+root@ip-33-44-55-66:/home/ubuntu# docker images --tree
+
+6. run the container with the special commandline
+
+root@ip-33-44-55-66:/home/ubuntu# docker run ubuntu /bin/bash -c "echo 'cool content' > /tmp/cool-file"
+
+7. Commit the docker image
+
+root@ip-33-44-55-66:/home/ubuntu# docker commit <containerID> <fridge>
+
+8. how to check the container history
+
+root@ip-33-44-55-66:/home/ubuntu# docker history fridge
+
+9. How to compress and create a 'tar' file out of docker image
+
+root@ip-33-44-55-66:/home/ubuntu# docker  save -o /tmp/fridge.tar fridge
+root@ip-33-44-55-66:/home/ubuntu# ls -lh /tmp/fridge.tar
+
+10. how to unzip the compress docker image (.tar) file
+
+root@ip-33-44-55-66:/home/ubuntu# tar -tf /tmp/fridge.tar
+
+11. How to import the docker image brought from another docker host(fridge)
+
+root@ip-33-44-55-66:/home/ubuntu# docker load -i /tmp/fridge.tar
+root@ip-33-44-55-66:/home/ubuntu# docker run -it fridge /bin/bash
+
+12. how to run a 'ping' command on docker detach mode,
+
+root@ip-33-44-55-66:/home/ubuntu#  docker run -d ubuntu /bin/bash -c "ping 8.8.8.8 -c 30"
+
+13. how to run 'top' process check command on container,
+
+root@ip-33-44-55-66:/home/ubuntu# docker top <containerID>
+
+14. docker commands options
+
+root@ip-33-44-55-66:/home/ubuntu# docker run --cpu-shares=256, memory=1g,
+root@ip-33-44-55-66:/home/ubuntu# docker run -d ubuntu:14.04 /bin/bash -c "ping 8.8.8.8"
+root@ip-33-44-55-66:/home/ubuntu# docker imspect <dockerID>
+root@ip-33-44-55-66:/home/ubuntu# docker attach <container_name>
+
+15. Docker stop 
+docker sends SIGTERM command at OS level to stop the container process PID
+root@ip-33-44-55-66:/home/ubuntu# docker stop <imageID>
+
+16. Docker killing
+POSIX signal to kill the PID SIGKILL
+root@ip-33-44-55-66:/home/ubuntu#
+
+17. Last container ran on host
+root@ip-33-44-55-66:/home/ubuntu# docker ps -l
+
+18. Start the docker container
+
+root@ip-33-44-55-66:/home/ubuntu# docker start <dockerID>
+attach the docker that is started in the earlier command,
+root@ip-33-44-55-66:/home/ubuntu# docker attach <dockerID> 
+
+if want to come out, CTRL P + Q -> deattach
+
+19. How do you restart the detach container,
+
+root@ip-33-44-55-66:/home/ubuntu# docker restart <containerID>
+
+20. remove the running container
+
+root@ip-33-44-55-66:/home/ubuntu# docker rm -f <containerID>
+
+21. Create alias for docker ps command to ease typing
+
+root@ip-33-44-55-66:/home/ubuntu#  alias dps = "docker ps"
+
+22. Check processes running inside the container
+
+root@ip-33-44-55-66:/home/ubuntu#  docker top <imageID>
+
+23. To view the processes running inside the container,
+
+root@ip-33-44-55-66:/home/ubuntu# docker attach <imageID>
+root@ip-33-44-55-66:/home/ubuntu# docker ps -ef
+
+24. To inspect the process
+
+root@ip-33-44-55-66:/home/ubuntu# docker inspect <imageID>
+
+25. How to get into containers bash/sh prompt,
+
+root@ip-33-44-55-66:/home/ubuntu# docker inspect <imageID> | grep pid
+
+root@ip-33-44-55-66:/home/ubuntu# nsenter -m -u -n -p -i -t <pid>
+
+m -> mount namespace
+u -> utf namespace
+n -> Network namespace
+p -> Process namespace   
+i -> IPC namespace
+t -> target pid
+
+26. How to get into running docker container
+
+root@ip-33-44-55-66:/home/ubuntu# docker-enter <containerID>
+root@ip-33-44-55-66:/home/ubuntu# docker exec -it <containerID> /bin/bash
+
+27. launch a new container from the mount volume
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -v /usr/local/bin:/target  <name>/nsenter
+
+******************************** Creating a docker file *********************************
+1. creating docker file "Dockerfile"
+
+# ubuntu based hello world container
+FROM ubuntu:15.04
+MAINTAINER huseni.kathiria@aeris.net
+RUN apt-get update
+RUN apt-get install -y nginx
+RUN apt-get install -y golang
+CMD ["echo", "Hello world"]
+
+docker build -t helloworld:0.1 .
+t -> tag
+            or
+docker build -t="build1" .
+
+
+root@ip-33-44-55-66:/home/ubuntu# docker images --tree
+root@ip-33-44-55-66:/home/ubuntu# docker history <imageID>
+
+
+---------------------------------------------------------------------------------------
+# Simple webserver
+FROM ubuntu:15.4
+RUN apt-get update
+RUN apt-get install -y apache2
+RUN apt-get install -y apache2-utils 
+RUN apt-get install -y vim
+RUN apt-get clean
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FORGROUND"]
+
+optimize the above
+
+FROM ubuntu:15.4
+RUN apt-get update && apt-get install -y \
+                      apache2 \
+ 					  apache2-utils \
+					  vim \
+					  && apt-get clean \
+					  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FORGROUND"]
+
+
+----------------------------------------------------------------------------
+Details about the CMD
+
+1. Shell form -> commands are expressed the same way as shell commands
+Commands get prepended by "/bin/sh -C"
+
+2. Exec form -> JSON array style - ["command", "arg1"]
+Containers doesn't need a shell
+Avoids string munging by the shell
+No variable expansion
+No special characters( &&, ||, > ...)
+
+----------------------------------------------------------------------------
+Details about the ENTRYPOINT
+
+It can't be overriden at run-time with normal commands.
+Any command at run-time is used as an argument to ENTRYPOINT
+
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping
+
+#CMD echo $var1
+ENTRYPOINT ["echo"] 
+
+you can make it 
+ENTRYPOINT ["apache2ctl"] 
+
+--entrypoint ( to modify the runtime argument for the container to the ENTRYPOINT)
+
+-----------------------------------------------------------------------------
+Details about the ENV
+
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping
+
+#CMD echo $var1
+ENV var1=huseni var2=kathiria
+# ENTRYPOINT ["echo"]
+
+OR
+
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping
+
+#CMD echo $var1
+ENV var1=ping var2=8.8.8.8
+
+CMD $var1 $var2
+
+Follow the logs in the running docker container
+docker logs -f <container_name>
+
+------------------------------------------------------------------------------
+Details about the VOLUME
+
+How to mount the volume for container
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -it -v /test-vol --name=voltainer ubuntu:15.4 /bin/bash
+
+check the volume using "docker inspect " command and verify the content of the file
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -it --volumes-from=voltainer ubuntu:15.04 /bin/bash  
+
+
+Mount a directory from host machine to container
+-----------------------------------------------------
+docker run -v /data:/data
+
+
+
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping
+VOLUME /data
+
+remove the volume from the container
+docker rm -v <container>
+
+example:
+docker stop voltainer
+docker rm -v voltainer
+ 
+
+
+********************************************************************************
+                     DOCKER NETWORKING
+********************************************************************************
+NFV
+SDN
+RFC 1918 -> for assigning container internal ip addresses
+It will act as a virtual ethernet cable to communicate across the docker host to docker container
+
+On the docker host, "docker0" bridge interface will be act as a s/w bridge/virtual switch to manage the network stack b/w containers and from host machines
+to container
+
+root@ip-33-44-55-66:/home/ubuntu# docker info
+root@ip-33-44-55-66:/home/ubuntu# ip a    <- Network stack on the host machine
+
+to identify what devices are connected and other details, we should use the below packages
+
+root@ip-33-44-55-66:/home/ubuntu# apt-get intall bridge-utils
+root@ip-33-44-55-66:/home/ubuntu# yum install bridge-utils
+
+root@ip-33-44-55-66:/home/ubuntu# brctl show docker0
+
+now, when you fire-up a container from the image, then you should see the interface
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -it --name=net1 net-img
+CTRL + P + Q
+
+root@ip-33-44-55-66:/home/ubuntu# brctl show 
+
+
+
+root@ip-33-44-55-66:/home/ubuntu# docker attach net1 (attaching to the running container)
+root@ip-33-44-55-66:/home/ubuntu# ip a
+root@ip-33-44-55-66:/home/ubuntu# ping 8.8.8.8
+
+root@ip-33-44-55-66:/home/ubuntu# traceroute 8.8.8.8
+ 
+root@ip-33-44-55-66:/home/ubuntu# docker inspect <containername>
+
+Container metada for any queries
+root@ip-33-44-55-66:/home/ubuntu# ls -l /var/lib/docker/containers/<containerID>
+
+root@ip-10-6-40-119:/home/ubuntu# dockerd -H 10.6.40.119:2375 -H unix:///var/run/docker.sock
+WARN[0000] [!] DON'T BIND ON ANY IP ADDRESS WITHOUT setting -tlsverify IF YOU DON'T KNOW WHAT YOU'RE DOING [!] 
+INFO[0000] libcontainerd: new containerd process, pid: 10385 
+WARN[0000] containerd: low RLIMIT_NOFILE changing to max  current=1024 max=4096
+INFO[0001] [graphdriver] using prior storage driver "aufs" 
+INFO[0001] Graph migration to content-addressability took 0.00 seconds 
+WARN[0001] Your kernel does not support swap memory limit. 
+WARN[0001] mountpoint for pids not found                
+INFO[0001] Loading containers: start.                   
+INFO[0001] Firewalld running: false                     
+INFO[0001] Default bridge (docker0) is assigned with an IP address 172.17.0.0/16. Daemon option --bip can be used to set a preferred IP address 
+
+Modifying the default docker DNS setting from the commandline
+--------------------------------------------------------------
+
+root@ip-33-44-55-66:/home/ubuntu# docker run --dns=8.8.4.4 --name=dnstest <imagename>
+ 
+root@ip-33-44-55-66:/home/ubuntu# docker inspect <containername>
+
+Exposing the network port from inside of container to out of container
+------------------------------------------------------------------------
+EXPOSE <port>
+
+FROM ubuntu:15.04
+RUN apt-get update && apt-get install -y iputils-ping traceroute apache2
+
+EXPOSE 80
+
+ENTRYPOINT["apache2ctl"]
+CMD ["-D", "FORGROUND"]
+
+building the image
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -d -p 5001:80 --name=web1 apache-img
+
+How to view the port mapping
+---------------------------------
+root@ip-33-44-55-66:/home/ubuntu# docker port web1
+
+Run the contain on UDP port
+
+root@ip-33-44-55-66:/home/ubuntu# docker run -d -p 5002:80/udp --name=web2 apache-img
+
+checking the interface available on the docker host
+root@ip-33-44-55-66:/home/ubuntu# ip -f inet a
+
+use the IP of eth1 instead of default(which could be eth0 or docker0)
+ 
+root@ip-33-44-55-66:/home/ubuntu# docker run -d -p 192.168.56.50:5003:80 --name=web2 apache-img
+
+Expose multiple ports from docker to outside. All the port exposed will be mapped randomly with the high port number available on the docker host
+root@ip-33-44-55-66:/home/ubuntu# docker run -d -P --name=throw throw-away
+
+Linking container
+--------------------
+root@ip-33-44-55-66:/home/ubuntu# docker run --name=src -d img
+root@ip-33-44-55-66:/home/ubuntu# docker run --name=rcvr --link=src:ali-src -it ubuntu:15.4 /bin/bash
+
+attach the recipent container and check the docker inspect to see the network config
+root@ip-33-44-55-66:/home/ubuntu# docker attach rcvr
+
+root@ip-33-44-55-66:/home/ubuntu# env | grep ALI
+
+root@ip-33-44-55-66:/home/ubuntu# cat /etc/hosts
+
+
+Docker stop
+------------------
+
+stop several dockers at a time
+docker rm $(docker ps -a -q)
+
+
+
+
+
+
