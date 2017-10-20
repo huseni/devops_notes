@@ -1,6 +1,13 @@
 Docker notes - running instance of any software you specify
 =================================================================
 
+Run the docker to listen over the network port
+---------------------------------------------
+docker running 
+----------------
+dockerd -H <IP>:2375 -H unix:///var/run/docker.sock &
+
+
 1. Run the docker images - Default it pulls the docker images from docker hub
 
 root@ip-33-44-55-66:/home/ubuntu# docker run -it fedora /bin/bash
