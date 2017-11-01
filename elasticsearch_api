@@ -1,0 +1,299 @@
+Elasticsearch Indices
+==========================
+
+curl -X POST http://localhost:9200/solutions-test-index
+
+curl -XPOST "localhost:9200/huseni-test-index" -d '{
+
+    "settings": {
+    
+        "number_of_shards": 5,
+        
+        "number_of_replicas": 2,
+        
+        "analysis": {
+        	"filter": {
+        	    "jnr_ngram_filter": {
+            	    "type": "edgeNGram",
+                	"side": "front",
+                	"min_gram": 1,
+                	"max_gram": 25
+            	}
+        	},	
+            "analyzer": {
+                "jnr_autocomplete_index_analyzer": {
+                    "tokenizer": "icu_tokenizer",
+                    "filter": ["icu_folding","jnr_ngram_filter"]
+                },
+                "jnr_autocomplete_search_analyzer": {
+                    "tokenizer": "icu_tokenizer",
+                    "filter": "icu_folding"
+                }
+            }
+        }        
+    },
+
+    "mappings": {
+    
+        "person": {
+            "_source": {
+                "enabled": true
+            },
+            "properties": {
+                "fullname": { 
+                    "index_name" : "name",                   
+               	 	"type" : "multi_field",
+              	  	"fields" : {
+                    	"autocomplete" : {
+                    		"type" : "string", 
+                    		"index" : "analyzed", 
+                    		"index_analyzer": "jnr_autocomplete_index_analyzer",
+                    		"search_analyzer": "jnr_autocomplete_search_analyzer"
+                   	 	},
+                    	"name" : {
+                    		"type" : "string", 
+                    		"index" : "not_analyzed"
+                    	}
+                    }
+                },
+                "city": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "index_name" : "city"
+                },
+                "user_tags": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "index_name" : "user_tag"
+                }
+            }
+        },
+        
+        "company": {
+            "_source": {
+                "enabled": true
+            },
+            "properties": {
+                "com_name": {
+                    "index_name" : "name",
+               	 	"type" : "multi_field",
+              	  	"fields" : {
+                    	"autocomplete" : {
+                    		"type" : "string", 
+                    		"index" : "analyzed", 
+                    		"index_analyzer": "jnr_autocomplete_index_analyzer",
+                    		"search_analyzer": "jnr_autocomplete_search_analyzer"
+                   	 	},
+                    	"name" : {
+                    		"type" : "string", 
+                    		"index" : "not_analyzed"
+                    	}
+                    }
+                },
+                "city": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "index_name" : "city"
+                },
+                "industry": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "index_name" : "industry"
+                },
+                "user_tags": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "index_name" : "user_tag"
+                }
+            }
+        }
+    }
+}'
+
+-------------------------------------
+Query types
+--------------------------------------
+match_all query
+match query
+multi_match query
+
+
+root@ip-10-23-1-37:/usr/share/elasticsearch# curl -XGET localhost:9200/_cat/indices
+yellow open .kibana OpRYLYoARpaX8CmCk26-9Q 1 1 1 0 3.2kb 3.2kb
+
+root@ip-10-23-1-37:/usr/share/elasticsearch# curl 'localhost:9200/_cat/indices?v'
+health status index   uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+yellow open   .kibana OpRYLYoARpaX8CmCk26-9Q   1   1          1            0      3.2kb          3.2kb
+root@ip-10-23-1-37:/usr/share/elasticsearch#
+
+
+curl -XPUT 'http://localhost:9200/solutions-test-index/' -d '{"settings":{ "index":{"number_of_shards":3,"number_of_replicas":2}}}'
+
+curl -XPUT 'http://localhost:9200/huseni-test-index/' -d '{"settings":{ "index":{"number_of_shards":6,"number_of_replicas":12, "your_name": "huseni"}}}'
+
+curl -XPUT 'http://localhost:9200/test-2017.09.14/' -d '{"settings":{ "index":{"number_of_shards":3,"number_of_replicas":2}}}'
+
+To get the status
+--------------------
+setup a 'sense' chrome plugin to make the API call to the elasticsearch
+curl -XGET localhost:9200/?pretty
+
+install the plugin head
+--------------------------
+cd /usr/share/elasticsearch/bin/plugin install mobz/elasticsearch-head
+
+verify the head plugin : <ip>:9200/_plugin/head/
+ 
+Anatomy of the ES API request
+=================================
+
+curl -XPUT localhost:9200/index/type/id
+index - > which database do you want this request to go for <database name>
+type -> which type of data to be stored
+id -> Identify the doc uniquely
+
+---------------------------------------------------------------------------------------
+POST blog/post
+{
+    "title": "non ide based doc",
+    "body": "blaha..blaha enough..not really",
+    "user": "Taha",
+    "date": "2017/09/15"
+    
+}
+
+GET blog/post/_search
+GET blog/post/1
+GET _search
+
+
+GET _search
+{
+   "query": {
+      "multi_match": {
+          "query": "tera",
+          "fields": [
+              "user",
+              "body"
+              ]
+      }
+   }
+}
+
+
+GET _search
+{
+   "query": {
+      "match_all": {}
+   }
+}
+
+GET _search
+{
+    "query": {
+        "match" : {
+            "user": "Tasneem"
+        }
+    }
+}
+
+----------------------------------------
+CAT API for search
+----------------------------------------
+1. /_cat/allocation
+2. /_cat/shards
+3. /_cat/shards/{index}
+4. /_cat/master
+5. /_cat/nodes
+
+------------------------------------------------------------------------
+How to blukload/data import into ElasticSearch cluster from json file
+-------------------------------------------------------------------------
+curl -s -XPOST localhost:9200/actresses/_bulk --data-binary @actresses.json;
+
+Github link - https://github.com/TetraTutorials/imdb_data_import_elastic <- For importing the giant JSON file
+location of imdb data download -> http://docs.aws.amazon.com/AmazonS3/latest/gsg/SigningUpforS3.html?ref_=imdbref_it_mn_lk4&tag=imdbtag_it_mn_lk4-20
+URL - http://www.imdb.com/interfaces
+
+Search the document with 'AND'
+--------------------------------
+GET _search
+{
+    "query": {
+	    "match" : {
+		    "name" : {
+			"query": "'gaby' goff, marry",
+			"operator": "and"
+			
+			}
+		}
+	
+	}
+}
+
+----------------------------
+Search with fuzziness - editdistance with the '1' char range, '0' - ignoring the fuzziness
+and 'auto' also work
+----------------------------
+GET _search
+{
+    "query": {
+	    "match" : {
+		    "name" : {
+			"query": "hanequa",
+			"operator": "or"
+			"fuzziness" : 1
+			
+			}
+		}
+	
+	}
+}
+
+-------------------------
+Solutions
+-------------------------
+GET _search
+{
+    "query": {
+        "match" : {
+		    "message" : {
+			"query": "responsetime",
+			"operator": "or",
+			"fuzziness" : 1
+			
+			}
+		}
+	
+	}
+}
+
+---------------------------------------
+CREATE A NEW INDEX WITH THE MAPPING
+----------------------------------------
+POST actor/actors
+{
+    "name": "ABC",
+    "year": 2016
+}
+
+PUT actor/
+{
+   "mappings":{
+       "actors":{
+          "properties": {
+		       "name" : {
+			       "type" : "string"
+			   
+			   },
+			   "year" : {
+			       "type" : "integer"
+			   }
+		  
+		  }
+	   
+	   }
+   
+   }
+  
+}
