@@ -100,3 +100,28 @@ Nmap done: 1 IP address (1 host up) scanned in 11.75 seconds
 Monitoring application port
 ----------------------------
 PHP Server Monitor  --- Open source monitoring tool - https://sourceforge.net/projects/phpservermon/?source=typ_redirect
+
+
+Jenkins Fix
+==================
+
+ 1977  sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+ 1978  sudo sh -c "iptables-save > /etc/iptables.rules"
+ 1979  sudo apt-get install iptables-persistent
+ 1980  service jenkins restart
+ 1981  reboot
+ 1982  kill -9 6130 6133
+ 1983  sudo sh -c "iptables-save > /etc/iptables.rules"
+ 1984  sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
+
+ Notes on Cloudformations
+ ================================
+ Body of cloudformation for the
+ 1. Declaration
+ 2. parameters
+ 3. mapping
+ 4. condition
+ 5. resources
+ 6. output
+
+  nmap -P0 -sU -p41235 10.23.3.155
